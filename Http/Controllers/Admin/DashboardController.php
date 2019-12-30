@@ -19,6 +19,7 @@ class DashboardController extends AdminBaseController
      * @var Authentication
      */
     private $auth;
+    private $modules;
 
     /**
      * @param RepositoryInterface $modules
@@ -28,9 +29,9 @@ class DashboardController extends AdminBaseController
     public function __construct(RepositoryInterface $modules, WidgetRepository $widget, Authentication $auth)
     {
         parent::__construct();
-        $this->bootWidgets($modules);
         $this->widget = $widget;
         $this->auth = $auth;
+        $this->modules = $modules;
     }
 
     /**
@@ -39,6 +40,8 @@ class DashboardController extends AdminBaseController
      */
     public function index()
     {
+        $this->bootWidgets($this->modules);
+
         $this->requireAssets();
 
         $widget = $this->widget->findForUser($this->auth->id());
@@ -91,12 +94,18 @@ class DashboardController extends AdminBaseController
      */
     private function bootWidgets(RepositoryInterface $modules)
     {
+        $user = $this->auth->user();
+
         foreach ($modules->enabled() as $module) {
             if (! $module->widgets) {
                 continue;
             }
+
             foreach ($module->widgets as $widgetClass) {
-                app($widgetClass)->boot();
+                $widget = app($widgetClass);
+                if($widget->hasAccess($user)){
+                    $widget->boot();
+                }
             }
         }
     }

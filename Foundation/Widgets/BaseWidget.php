@@ -4,6 +4,7 @@ namespace Modules\Dashboard\Foundation\Widgets;
 
 use Illuminate\Contracts\View\Factory;
 use Modules\Dashboard\Composers\WidgetViewComposer;
+use Modules\User\Entities\UserInterface;
 
 abstract class BaseWidget
 {
@@ -18,8 +19,8 @@ abstract class BaseWidget
 
         if ($view->exists($this->view())) {
             $html = $view->make($this->view())
-                         ->with($this->data())
-                         ->render();
+                ->with($this->data())
+                ->render();
 
             $sluggedName = str_slug($this->name());
 
@@ -55,4 +56,18 @@ abstract class BaseWidget
      * @return array
      */
     abstract protected function data();
+
+    /**
+     * Checks whatever the user has permission to view the widget
+     * on dashboard or not
+     *
+     * @param  UserInterface $user
+     * @return boolean
+     *
+     * @author Daksh Mehta <dakshhmehta@gmail.com>
+     */
+    public function hasAccess(UserInterface $user)
+    {
+        return true;
+    }
 }
